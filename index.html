@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 نظام تحضير الطلاب الذكي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+:root {
+  --bg: #060D1A;
+  --surface: #0F1F35;
+  --surface2: #162840;
+  --surface3: #1E3354;
+  --accent: #00D97E;
+  --accent2: #4F8EF7;
+  --danger: #FF4D6D;
+  --warning: #FFB547;
+  --text: #E8F0FE;
+  --muted: #7A9CC0;
+  --border: rgba(79,142,247,0.12);
+  --glow: 0 0 20px rgba(0,217,126,0.2);
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --r: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family:'Tajawal',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; direction:rtl; }
+
+/* ── SCREENS ── */
+.screen { display:none; min-height:100vh; }
+.screen.active { display:flex; }
+
+/* ── SETUP ── */
+#screen-setup {
+  justify-content:center; align-items:center;
+  background: radial-gradient(ellipse at 30% 40%, rgba(79,142,247,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 60%, rgba(0,217,126,0.1) 0%, transparent 50%),
+              var(--bg);
+}
+.setup-box {
+  background: var(--surface); border:1px solid var(--border);
+  border-radius: var(--r); padding:48px; max-width:520px; width:90%;
+  box-shadow: var(--shadow);
+}
+.logo-ring {
+  width:80px; height:80px; border-radius:50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:2rem; margin:0 auto 24px; box-shadow: var(--glow);
+}
+.setup-box h1 { font-size:1.8rem; font-weight:800; text-align:center; margin-bottom:6px; }
+.setup-box > p { color:var(--muted); text-align:center; margin-bottom:28px; line-height:1.7; }
+
+/* ── FORM ELEMENTS ── */
+.fg { margin-bottom:18px; }
+.fg label { display:block; font-weight:600; font-size:.9rem; color:var(--muted); margin-bottom:8px; }
+.fg input, .fg select, .fg textarea {
+  width:100%; padding:12px 16px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; color:var(--text);
+  font-family:'Tajawal',sans-serif; font-size:1rem;
+  transition:border-color .2s;
+}
+.fg input:focus, .fg select:focus { outline:none; border-color:var(--accent2); }
+.fg input[dir="ltr"] { direction:ltr; }
+
+/* ── BUTTONS ── */
+.btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 24px; border-radius:10px; border:none;
+  cursor:pointer; font-family:'Tajawal',sans-serif;
+  font-size:1rem; font-weight:700; transition:all .2s;
+  text-decoration:none; white-space:nowrap;
+}
+.btn-green  { background:var(--accent); color:#000; }
+.btn-green:hover  { background:#00f090; transform:translateY(-1px); box-shadow:var(--glow); }
+.btn-blue   { background:var(--accent2); color:#fff; }
+.btn-blue:hover   { background:#6fa8ff; transform:translateY(-1px); }
+.btn-red    { background:var(--danger); color:#fff; }
+.btn-red:hover    { background:#ff7090; }
+.btn-ghost  { background:transparent; border:1px solid var(--border); color:var(--text); }
+.btn-ghost:hover  { background:var(--surface2); }
+.btn-sm { padding:8px 16px; font-size:.85rem; }
+.btn-full { width:100%; justify-content:center; }
+.btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
+.btn-icon {
+  width:34px; height:34px; border-radius:8px;
+  border:1px solid var(--border); background:transparent;
+  color:var(--danger); cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-size:1rem; transition:background .2s;
+}
+.btn-icon:hover { background:rgba(255,77,109,.12); }
+
+/* ── STEPS BOX ── */
+.steps {
+  background:rgba(79,142,247,.08); border:1px solid rgba(79,142,247,.2);
+  border-radius:10px; padding:16px 20px; margin-bottom:24px;
+  font-size:.88rem; color:var(--muted); line-height:2;
+}
+.steps strong { color:var(--accent2); }
+.steps ol { padding-right:20px; }
+code {
+  background:rgba(0,0,0,.4); padding:2px 8px;
+  border-radius:5px; font-size:.85rem; color:var(--accent);
+}
+.sep { height:1px; background:var(--border); margin:20px 0; }
+
+/* ── AUTH ── */
+#screen-auth {
+  justify-content:center; align-items:center;
+  background: radial-gradient(ellipse at center, rgba(0,217,126,0.06) 0%, transparent 70%), var(--bg);
+}
+.auth-box {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:48px; max-width:400px; width:90%;
+  text-align:center; box-shadow:var(--shadow);
+}
+.auth-box h2 { font-size:1.6rem; font-weight:800; margin:16px 0 8px; }
+
+/* ── LOADING ── */
+#screen-loading { justify-content:center; align-items:center; flex-direction:column; gap:16px; }
+.spinner {
+  width:56px; height:56px;
+  border:3px solid var(--border); border-top-color:var(--accent);
+  border-radius:50%; animation:spin 1s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-steps { list-style:none; color:var(--muted); font-size:.9rem; line-height:2; text-align:right; }
+.loading-steps li.done { color:var(--accent); }
+.loading-steps li.active { color:var(--text); font-weight:700; }
+
+/* ── MAIN APP ── */
+#screen-main { flex-direction:column; }
+
+/* NAVBAR */
+.navbar {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 24px; display:flex; align-items:center; gap:8px;
+  height:62px; position:sticky; top:0; z-index:100;
+  backdrop-filter:blur(12px);
+}
+.nav-brand { font-size:1.1rem; font-weight:800; color:var(--accent); margin-left:auto; flex-shrink:0; }
+.nav-tabs { display:flex; gap:2px; overflow-x:auto; }
+.nav-tab {
+  padding:8px 16px; border-radius:8px; cursor:pointer;
+  font-family:'Tajawal',sans-serif; font-size:.92rem; font-weight:600;
+  border:none; background:transparent; color:var(--muted);
+  transition:all .2s; white-space:nowrap;
+}
+.nav-tab:hover { background:var(--surface2); color:var(--text); }
+.nav-tab.active { background:var(--accent); color:#000; }
+.nav-actions { display:flex; gap:8px; align-items:center; flex-shrink:0; }
+
+/* CONTENT */
+.content { flex:1; padding:24px; max-width:1200px; margin:0 auto; width:100%; }
+
+/* VIEWS */
+.view { display:none; }
+.view.active { display:block; }
+.view-title { font-size:1.5rem; font-weight:800; margin-bottom:4px; }
+.view-sub { color:var(--muted); font-size:.9rem; margin-bottom:20px; }
+
+/* CARDS */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:22px; margin-bottom:16px;
+}
+.card-title { font-size:1rem; font-weight:700; margin-bottom:16px; color:var(--text); }
+.card-sm { padding:16px; }
+
+/* GRID */
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:16px; }
+@media(max-width:768px) {
+  .g2, .g3 { grid-template-columns:1fr; }
+  .navbar { padding:0 12px; }
+  .content { padding:12px; }
+}
+
+/* STAT CARDS */
+.stat { text-align:center; }
+.stat-val { font-size:2.4rem; font-weight:900; color:var(--accent); }
+.stat-val.blue { color:var(--accent2); }
+.stat-val.red { color:var(--danger); }
+.stat-lbl { color:var(--muted); font-size:.85rem; margin-top:2px; }
+
+/* ── CAMERA ── */
+.cam-wrap {
+  position:relative; background:#000; border-radius:var(--r);
+  overflow:hidden; aspect-ratio:16/9; max-height:420px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); margin-bottom:12px;
+}
+.cam-placeholder { color:var(--muted); text-align:center; pointer-events:none; }
+.cam-placeholder .icon { font-size:3rem; margin-bottom:8px; }
+video.cam-video {
+  width:100%; height:100%; object-fit:cover;
+  transform:scaleX(-1); display:none;
+}
+canvas.cam-canvas {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  pointer-events:none;
+}
+.cam-status {
+  position:absolute; top:10px; right:10px;
+  background:rgba(0,0,0,.7); backdrop-filter:blur(8px);
+  color:var(--accent); padding:5px 12px; border-radius:20px;
+  font-size:.82rem; font-weight:700; display:none;
+}
+.cam-status.red { color:var(--danger); }
+
+/* ACTIONS ROW */
+.actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* STUDENT ITEMS */
+.student-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; border-radius:10px; border:1px solid var(--border);
+  margin-bottom:8px; transition:background .15s;
+}
+.student-item:hover { background:var(--surface2); }
+.avatar {
+  width:42px; height:42px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:1.1rem; color:#000;
+}
+.s-info { flex:1; min-width:0; }
+.s-name { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.s-class { color:var(--muted); font-size:.82rem; }
+
+/* BADGES */
+.badge {
+  padding:3px 10px; border-radius:20px; font-size:.78rem;
+  font-weight:700; white-space:nowrap;
+}
+.b-green { background:rgba(0,217,126,.15); color:var(--accent); }
+.b-blue  { background:rgba(79,142,247,.15); color:var(--accent2); }
+.b-red   { background:rgba(255,77,109,.15); color:var(--danger); }
+
+/* ATTENDANCE LIST */
+.att-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px; border-radius:8px; margin-bottom:6px;
+  background:rgba(0,217,126,.06); border:1px solid rgba(0,217,126,.12);
+}
+.att-item:hover { background:rgba(0,217,126,.1); }
+.att-scroll { max-height:340px; overflow-y:auto; }
+
+/* TABLE-LIKE RECORDS */
+.rec-header, .rec-row {
+  display:grid; grid-template-columns:2fr 1fr 1fr 1fr;
+  padding:10px 14px; gap:8px; align-items:center; font-size:.88rem;
+}
+.rec-header { color:var(--muted); font-weight:700; font-size:.78rem; border-bottom:1px solid var(--border); }
+.rec-row { border-bottom:1px solid rgba(255,255,255,.03); }
+.rec-row:hover { background:var(--surface2); }
+
+/* EMPTY */
+.empty { text-align:center; padding:48px 24px; color:var(--muted); }
+.empty .e-icon { font-size:3.5rem; margin-bottom:12px; }
+
+/* NOTIFICATION */
+#notif {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px);
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:12px 24px; font-weight:700;
+  box-shadow:var(--shadow); transition:transform .3s ease; z-index:9999;
+  pointer-events:none;
+}
+#notif.show { transform:translateX(-50%) translateY(0); }
+#notif.success { border-color:var(--accent); color:var(--accent); }
+#notif.error   { border-color:var(--danger); color:var(--danger); }
+#notif.info    { border-color:var(--accent2); color:var(--accent2); }
+
+/* PULSE DOT */
+.dot { width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block; animation:pulse 1.8s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* SEARCH */
+.search-input {
+  padding:9px 16px; background:var(--surface2); border:1px solid var(--border);
+  border-radius:9px; color:var(--text); font-family:'Tajawal',sans-serif;
+  font-size:.9rem; width:200px;
+}
+.search-input:focus { outline:none; border-color:var(--accent2); }
+
+/* DATE FILTER */
+.filter-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+.filter-row label { font-weight:600; color:var(--muted); font-size:.88rem; }
+.filter-row input[type="date"], .filter-row select {
+  padding:8px 14px; background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; color:var(--text); font-family:'Tajawal',sans-serif;
+}
+.filter-row input[type="date"] { direction:ltr; }
+
+/* PREVIEW IMG */
+.preview-img { width:100%; border-radius:10px; display:block; }
+
+/* PROGRESS */
+.prog-bar { background:var(--surface2); border-radius:8px; height:5px; overflow:hidden; margin-top:8px; }
+.prog-fill { height:100%; background:var(--accent); border-radius:8px; transition:width .3s; }
+
+/* MODAL */
+.modal-bg {
+  position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:500;
+  display:flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(4px); display:none;
+}
+.modal-bg.open { display:flex; }
+.modal {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:32px; max-width:400px; width:90%;
+  box-shadow:var(--shadow);
+}
+.modal h3 { font-size:1.2rem; font-weight:800; margin-bottom:16px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCREEN 1: SETUP (First Time)
+═══════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-setup">
+  <div class="setup-box">
+    <div class="logo-ring">🎓</div>
+    <h1>نظام تحضير الطلاب</h1>
+    <p>تعرّف تلقائي على وجوه الطلاب وتسجيل الحضور مرتبط بـ Google Drive</p>
+
+    <div class="steps">
+      <strong>إعداد Google OAuth (مرة واحدة فقط):</strong>
+      <ol>
+        <li>افتح <strong>console.cloud.google.com</strong></li>
+        <li>أنشئ مشروعاً جديداً ← فعّل <strong>Google Drive API</strong></li>
+        <li>APIs &amp; Services → Credentials → Create → OAuth 2.0 Client ID</li>
+        <li>النوع: <strong>Web application</strong></li>
+        <li>Authorized JavaScript origins: <code>http://localhost:8000</code></li>
+        <li>انسخ الـ <strong>Client ID</strong> وألصقه أدناه</li>
+      </ol>
+    </div>
+
+    <div class="steps" style="background:rgba(0,217,126,.06);border-color:rgba(0,217,126,.2)">
+      <strong style="color:var(--accent)">تشغيل الملف:</strong><br>
+      افتح Terminal في نفس مجلد الملف وشغّل:<br>
+      <code>python3 -m http.server 8000</code><br>
+      ثم افتح: <code>http://localhost:8000/attendance-system.html</code>
+    </div>
+
+    <div class="fg">
+      <label>Google OAuth Client ID</label>
+      <input type="text" id="inp-client-id" dir="ltr" placeholder="1234567890-xxxx.apps.googleusercontent.com">
+    </div>
+
+    <button class="btn btn-green btn-full" onclick="saveSetup()">💾 حفظ والمتابعة</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCREEN 2: AUTH
+═══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-auth">
+  <div class="auth-box">
+    <div class="logo-ring">🎓</div>
+    <h2>نظام تحضير الطلاب</h2>
+    <p style="color:var(--muted);margin-bottom:32px;line-height:1.7">سجّل الدخول بحساب Google للوصول إلى بيانات الطلاب المحفوظة</p>
+    <button class="btn btn-blue btn-full" onclick="signIn()" style="margin-bottom:12px">
+      🔐 تسجيل الدخول بـ Google
+    </button>
+    <button class="btn btn-ghost btn-full btn-sm" onclick="showScreen('screen-setup')">
+      ⚙️ تغيير Client ID
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCREEN 3: LOADING
+═══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-loading" style="flex-direction:column;align-items:center;justify-content:center;gap:20px">
+  <div class="spinner"></div>
+  <ul class="loading-steps" id="loading-steps">
+    <li id="ls-models">⏳ تحميل نماذج التعرف على الوجوه...</li>
+    <li id="ls-drive">⏳ إعداد Google Drive...</li>
+    <li id="ls-students">⏳ تحميل بيانات الطلاب...</li>
+    <li id="ls-att">⏳ تحميل حضور اليوم...</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCREEN 4: MAIN APP
+═══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-main">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="attendance" onclick="goTab('attendance')">✅ الحضور</button>
+      <button class="nav-tab" data-tab="register" onclick="goTab('register')">📸 تسجيل</button>
+      <button class="nav-tab" data-tab="students" onclick="goTab('students')">👥 الطلاب</button>
+      <button class="nav-tab" data-tab="records" onclick="goTab('records')">📊 السجلات</button>
+    </div>
+    <div class="nav-brand">🎓 نظام التحضير</div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="تحديث البيانات">🔄</button>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ── VIEW: ATTENDANCE ── -->
+    <div class="view active" id="view-attendance">
+      <p class="view-title">أخذ الحضور <span class="dot"></span></p>
+      <p class="view-sub">الكاميرا تتعرف على الطلاب تلقائياً وتسجل حضورهم</p>
+
+      <div class="g2">
+        <!-- Camera col -->
+        <div>
+          <div class="cam-wrap" id="camwrap-att">
+            <div class="cam-placeholder" id="att-ph">
+              <div class="icon">🎥</div>
+              <p>اضغط "بدء الحضور"</p>
+            </div>
+            <video id="vid-att" class="cam-video" autoplay muted playsinline></video>
+            <canvas id="cvs-att" class="cam-canvas"></canvas>
+            <div class="cam-status" id="att-status"></div>
+          </div>
+
+          <div class="actions" style="margin-bottom:12px">
+            <button class="btn btn-green" id="btn-att-start" onclick="startAttendance()">▶ بدء الحضور</button>
+            <button class="btn btn-red" id="btn-att-stop" onclick="stopAttendance()" style="display:none">■ إيقاف</button>
+            <button class="btn btn-ghost" onclick="exportToday()">📥 تصدير اليوم</button>
+          </div>
+
+          <!-- Class filter -->
+          <div class="card card-sm">
+            <div style="display:flex;align-items:center;gap:12px">
+              <label style="font-weight:600;white-space:nowrap;color:var(--muted)">فلتر الصف:</label>
+              <select id="att-class-filter" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Tajawal',sans-serif">
+                <option value="">جميع الصفوف</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today col -->
+        <div>
+          <div class="g3">
+            <div class="card stat"><div class="stat-val" id="s-present">0</div><div class="stat-lbl">حاضر اليوم</div></div>
+            <div class="card stat"><div class="stat-val blue" id="s-total">0</div><div class="stat-lbl">إجمالي الطلاب</div></div>
+            <div class="card stat"><div class="stat-val red" id="s-absent">0</div><div class="stat-lbl">غائب</div></div>
+          </div>
+
+          <div class="card" style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div class="card-title" style="margin:0">حضور اليوم</div>
+              <span class="badge b-green" id="today-count">0 طالب</span>
+            </div>
+            <div class="att-scroll" id="today-list">
+              <div class="empty"><div class="e-icon">📋</div><p>لا يوجد حضور مسجّل</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: REGISTER ── -->
+    <div class="view" id="view-register">
+      <p class="view-title">تسجيل طالب جديد</p>
+      <p class="view-sub">التقط صورة وجه الطالب وأدخل بياناته</p>
+
+      <div class="g2">
+        <!-- Camera col -->
+        <div>
+          <div class="cam-wrap" id="camwrap-reg">
+            <div class="cam-placeholder" id="reg-ph">
+              <div class="icon">📷</div>
+              <p>اضغط "تشغيل الكاميرا"</p>
+            </div>
+            <video id="vid-reg" class="cam-video" autoplay muted playsinline></video>
+            <canvas id="cvs-reg" class="cam-canvas"></canvas>
+            <div class="cam-status" id="reg-status">✅ الكاميرا تعمل</div>
+          </div>
+
+          <div class="actions" style="margin-bottom:12px">
+            <button class="btn btn-blue" id="btn-reg-start" onclick="startRegCamera()">📷 تشغيل الكاميرا</button>
+            <button class="btn btn-green" id="btn-reg-capture" onclick="captureStudent()" disabled>📸 التقاط</button>
+            <button class="btn btn-ghost" id="btn-reg-stop" onclick="stopRegCamera()" style="display:none">■ إيقاف</button>
+          </div>
+
+          <div id="reg-preview" style="display:none">
+            <div class="card card-sm">
+              <div class="card-title">الصورة الملتقطة ✅</div>
+              <img id="preview-img" class="preview-img">
+            </div>
+          </div>
+        </div>
+
+        <!-- Form col -->
+        <div>
+          <div class="card">
+            <div class="card-title">بيانات الطالب</div>
+            <div class="fg">
+              <label>الاسم الكامل *</label>
+              <input type="text" id="inp-name" placeholder="أدخل اسم الطالب">
+            </div>
+            <div class="fg">
+              <label>الصف الدراسي *</label>
+              <input type="text" id="inp-class" placeholder="مثال: الصف الأول أ">
+            </div>
+            <div class="fg">
+              <label>رقم الطالب (اختياري)</label>
+              <input type="text" id="inp-sid" placeholder="الرقم التعريفي">
+            </div>
+
+            <div id="reg-msg" style="display:none;background:rgba(0,217,126,.08);border:1px solid rgba(0,217,126,.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:.88rem;color:var(--accent)"></div>
+
+            <button class="btn btn-green btn-full" id="btn-save" onclick="saveStudent()" disabled>
+              💾 حفظ الطالب في Drive
+            </button>
+          </div>
+
+          <div class="card" style="color:var(--muted);font-size:.88rem;line-height:2.2">
+            <div class="card-title">💡 نصائح للتصوير</div>
+            <ul style="padding-right:20px">
+              <li>تأكد من إضاءة جيدة وواضحة</li>
+              <li>انظر مباشرة للكاميرا</li>
+              <li>تأكد من أن الوجه كامل في الإطار</li>
+              <li>شخص واحد فقط في الصورة</li>
+              <li>تجنب الإكسسوارات الكبيرة</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: STUDENTS ── -->
+    <div class="view" id="view-students">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+        <div>
+          <p class="view-title">قائمة الطلاب</p>
+          <p class="view-sub">جميع الطلاب المسجّلين في النظام</p>
+        </div>
+        <div class="actions">
+          <input class="search-input" placeholder="🔍 بحث..." oninput="filterStudents(this.value)">
+          <button class="btn btn-ghost btn-sm" onclick="loadStudents()">🔄 تحديث</button>
+        </div>
+      </div>
+      <div id="students-list">
+        <div class="empty"><div class="e-icon">👥</div><p>لا يوجد طلاب</p></div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: RECORDS ── -->
+    <div class="view" id="view-records">
+      <p class="view-title">سجل الحضور</p>
+      <p class="view-sub">عرض وتصدير سجلات الحضور اليومية</p>
+
+      <div class="card">
+        <div class="filter-row">
+          <label>التاريخ:</label>
+          <input type="date" id="rec-date" onchange="loadRecords()">
+          <label>الصف:</label>
+          <select id="rec-class" onchange="loadRecords()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Tajawal',sans-serif">
+            <option value="">جميع الصفوف</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="loadRecords()">🔍 عرض</button>
+          <button class="btn btn-green btn-sm" onclick="exportCSV()">📥 CSV</button>
+        </div>
+      </div>
+
+      <div id="records-out">
+        <div class="empty"><div class="e-icon">📊</div><p>اختر تاريخاً لعرض السجلات</p></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /screen-main -->
+
+<!-- Notification -->
+<div id="notif"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── CONSTANTS ─────────────────────────────────────────
+const MODELS_URL   = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
+const API          = 'https://www.googleapis.com/drive/v3';
+const UPLOAD_API   = 'https://www.googleapis.com/upload/drive/v3';
+const SCOPE        = 'https://www.googleapis.com/auth/drive.file';
+const FOLDER_NAME  = 'نظام_تحضير_الطلاب';
+const MATCH_TH     = 0.5;   // 0 = perfect match, 1 = any
+const MERGE_MIN    = 30;    // minutes before allowing duplicate attendance
+
+// ── STATE ─────────────────────────────────────────────
+const S = {
+  token: null, tokenExp: null,
+  rootId: null, attFolderId: null,
+  studentsFileId: null, students: [],
+  faceMatcher: null, modelsOk: false,
+  regStream: null, attStream: null,
+  attInterval: null,
+  capturedDesc: null, capturedBlob: null,
+  todayAtt: [], todayFileId: null,
+  currentRecords: [],
+};
+
+let tokenClient;
+
+// ── BOOT ──────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('gcid') || '';
+  document.getElementById('inp-client-id').value = saved;
+  document.getElementById('rec-date').value = today();
+  if (saved) initGIS(saved);
+});
+
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function saveSetup() {
+  const id = document.getElementById('inp-client-id').value.trim();
+  if (!id) { notif('أدخل Client ID', 'error'); return; }
+  localStorage.setItem('gcid', id);
+  initGIS(id);
+}
+
+function initGIS(clientId) {
+  const wait = () => {
+    if (typeof google === 'undefined' || !google.accounts) { setTimeout(wait, 250); return; }
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId, scope: SCOPE, callback: onToken,
+    });
+    showScreen('screen-auth');
+  };
+  wait();
+}
+
+function signIn() {
+  if (!tokenClient) { notif('انتظر لحظة...', 'info'); return; }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+async function onToken(r) {
+  if (r.error) { notif('فشل تسجيل الدخول: ' + r.error, 'error'); return; }
+  S.token    = r.access_token;
+  S.tokenExp = Date.now() + r.expires_in * 1000;
+  showScreen('screen-loading');
+  await boot();
+}
+
+// ── BOOT SEQUENCE ─────────────────────────────────────
+async function boot() {
+  try {
+    lsMark('ls-models', 'active');
+    await loadModels();
+    lsMark('ls-models', 'done');
+
+    lsMark('ls-drive', 'active');
+    await setupFolders();
+    lsMark('ls-drive', 'done');
+
+    lsMark('ls-students', 'active');
+    await loadStudents();
+    lsMark('ls-students', 'done');
+
+    lsMark('ls-att', 'active');
+    await loadTodayAtt();
+    lsMark('ls-att', 'done');
+
+    buildMatcher();
+    fillClassFilters();
+    showScreen('screen-main');
+    notif('🎉 تم التحميل بنجاح', 'success');
+  } catch(e) {
+    console.error(e);
+    notif('خطأ: ' + e.message, 'error');
+    showScreen('screen-auth');
+  }
+}
+
+function lsMark(id, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = cls;
+  const icons = { active: '🔄', done: '✅' };
+  const texts = {
+    'ls-models':   'تحميل نماذج التعرف على الوجوه',
+    'ls-drive':    'إعداد Google Drive',
+    'ls-students': 'تحميل بيانات الطلاب',
+    'ls-att':      'تحميل حضور اليوم',
+  };
+  el.textContent = (icons[cls] || '⏳') + ' ' + texts[id] + (cls === 'done' ? '' : '...');
+}
+
+// ── FACE-API.JS ───────────────────────────────────────
+async function loadModels() {
+  if (S.modelsOk) return;
+  await faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL);
+  await faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL);
+  await faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL);
+  S.modelsOk = true;
+}
+
+function buildMatcher() {
+  const valid = S.students.filter(s => s.descriptor?.length === 128);
+  if (!valid.length) { S.faceMatcher = null; return; }
+  const labeled = valid.map(s =>
+    new faceapi.LabeledFaceDescriptors(s.id, [new Float32Array(s.descriptor)])
+  );
+  S.faceMatcher = new faceapi.FaceMatcher(labeled, MATCH_TH);
+}
+
+async function detectAll(video) {
+  return faceapi
+    .detectAllFaces(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.55 }))
+    .withFaceLandmarks()
+    .withFaceDescriptors();
+}
+
+// ── GOOGLE DRIVE HELPERS ──────────────────────────────
+async function get(path, params = {}) {
+  const url = new URL(API + path);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + S.token } });
+  if (!r.ok) throw new Error('Drive GET ' + r.status + ': ' + await r.text());
+  return r.json();
+}
+
+async function getMedia(id) {
+  const r = await fetch(`${API}/files/${id}?alt=media`, {
+    headers: { Authorization: 'Bearer ' + S.token }
+  });
+  if (!r.ok) throw new Error('Drive media ' + r.status);
+  return r.json();
+}
+
+async function createFolder(name, parentId) {
+  const body = { name, mimeType: 'application/vnd.google-apps.folder', ...(parentId ? { parents: [parentId] } : {}) };
+  const r = await fetch(API + '/files', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + S.token, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return r.json();
+}
+
+async function uploadJSON(name, data, parentId, fileId) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const meta = { name, mimeType: 'application/json', ...(parentId && !fileId ? { parents: [parentId] } : {}) };
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+  form.append('file', blob);
+  const url = fileId
+    ? `${UPLOAD_API}/files/${fileId}?uploadType=multipart`
+    : `${UPLOAD_API}/files?uploadType=multipart`;
+  const r = await fetch(url, {
+    method: fileId ? 'PATCH' : 'POST',
+    headers: { Authorization: 'Bearer ' + S.token },
+    body: form,
+  });
+  return r.json();
+}
+
+async function uploadBlob(name, blob, parentId) {
+  const meta = { name, mimeType: blob.type || 'image/jpeg', parents: [parentId] };
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+  form.append('file', blob);
+  const r = await fetch(`${UPLOAD_API}/files?uploadType=multipart`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + S.token },
+    body: form,
+  });
+  return r.json();
+}
+
+async function delFile(id) {
+  await fetch(`${API}/files/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer ' + S.token },
+  });
+}
+
+// ── FOLDER SETUP ──────────────────────────────────────
+async function setupFolders() {
+  // Root folder
+  let list = await get('/files', {
+    q: `name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id)',
+  });
+  S.rootId = list.files?.[0]?.id;
+  if (!S.rootId) {
+    const f = await createFolder(FOLDER_NAME);
+    S.rootId = f.id;
+  }
+
+  // Attendance subfolder
+  list = await get('/files', {
+    q: `name='attendance' and mimeType='application/vnd.google-apps.folder' and '${S.rootId}' in parents and trashed=false`,
+    fields: 'files(id)',
+  });
+  S.attFolderId = list.files?.[0]?.id;
+  if (!S.attFolderId) {
+    const f = await createFolder('attendance', S.rootId);
+    S.attFolderId = f.id;
+  }
+}
+
+// ── STUDENTS ──────────────────────────────────────────
+async function loadStudents() {
+  const list = await get('/files', {
+    q: `name='students.json' and '${S.rootId}' in parents and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (list.files?.length) {
+    S.studentsFileId = list.files[0].id;
+    try { S.students = await getMedia(S.studentsFileId); } catch { S.students = []; }
+  } else {
+    S.students = []; S.studentsFileId = null;
+  }
+  renderStudents();
+}
+
+async function saveStudents() {
+  const r = await uploadJSON('students.json', S.students, S.rootId, S.studentsFileId);
+  if (!S.studentsFileId) S.studentsFileId = r.id;
+}
+
+// ── REGISTRATION ──────────────────────────────────────
+async function startRegCamera() {
+  try {
+    S.regStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 } } });
+    const vid = $('vid-reg');
+    vid.srcObject = S.regStream;
+    vid.style.display = 'block';
+    await vid.play();
+    $('reg-ph').style.display = 'none';
+    $('reg-status').style.display = 'block';
+    $('btn-reg-start').style.display = 'none';
+    $('btn-reg-stop').style.display = 'inline-flex';
+    $('btn-reg-capture').disabled = false;
+  } catch(e) {
+    notif('لا يمكن الوصول للكاميرا: ' + e.message, 'error');
+  }
+}
+
+function stopRegCamera() {
+  stopStream(S.regStream); S.regStream = null;
+  const vid = $('vid-reg'); vid.style.display = 'none'; vid.srcObject = null;
+  $('reg-ph').style.display = 'block';
+  $('reg-status').style.display = 'none';
+  $('btn-reg-start').style.display = 'inline-flex';
+  $('btn-reg-stop').style.display = 'none';
+  $('btn-reg-capture').disabled = true;
+  clearCanvas('cvs-reg');
+}
+
+async function captureStudent() {
+  const vid = $('vid-reg');
+  if (!vid.srcObject) { notif('شغّل الكاميرا أولاً', 'error'); return; }
+
+  const btn = $('btn-reg-capture');
+  btn.disabled = true;
+  btn.textContent = '⏳ جاري الاكتشاف...';
+
+  try {
+    const dets = await detectAll(vid);
+    if (!dets.length) {
+      notif('لم يُكتشف وجه — تأكد من الإضاءة والزاوية', 'error');
+      return;
+    }
+    if (dets.length > 1) {
+      notif('أكثر من وجه — تأكد من وجود شخص واحد', 'error');
+      return;
+    }
+
+    S.capturedDesc = Array.from(dets[0].descriptor);
+
+    // Draw box on canvas
+    const cvs = $('cvs-reg');
+    cvs.width = vid.videoWidth; cvs.height = vid.videoHeight;
+    const ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+    const box = dets[0].detection.box;
+    // Mirror x for display (video is CSS-mirrored)
+    const mx = cvs.width - box.x - box.width;
+    ctx.strokeStyle = '#00D97E'; ctx.lineWidth = 3;
+    ctx.strokeRect(mx, box.y, box.width, box.height);
+    ctx.fillStyle = 'rgba(0,217,126,0.15)';
+    ctx.fillRect(mx, box.y, box.width, box.height);
+
+    // Capture photo
+    const offscreen = document.createElement('canvas');
+    offscreen.width = vid.videoWidth; offscreen.height = vid.videoHeight;
+    offscreen.getContext('2d').drawImage(vid, 0, 0);
+    offscreen.toBlob(blob => {
+      S.capturedBlob = blob;
+      $('preview-img').src = URL.createObjectURL(blob);
+      $('reg-preview').style.display = 'block';
+    }, 'image/jpeg', 0.88);
+
+    $('btn-save').disabled = false;
+    $('reg-msg').style.display = 'block';
+    $('reg-msg').textContent = '✅ تم اكتشاف الوجه بنجاح! أدخل بيانات الطالب ثم احفظ.';
+    notif('تم التقاط الوجه ✅', 'success');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📸 التقاط';
+  }
+}
+
+async function saveStudent() {
+  const name  = $('inp-name').value.trim();
+  const cls   = $('inp-class').value.trim();
+  const sid   = $('inp-sid').value.trim();
+
+  if (!name) { notif('أدخل اسم الطالب', 'error'); return; }
+  if (!cls)  { notif('أدخل الصف الدراسي', 'error'); return; }
+  if (!S.capturedDesc) { notif('التقط صورة أولاً', 'error'); return; }
+
+  const btn = $('btn-save');
+  btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
+
+  try {
+    const student = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name, class: cls, studentId: sid,
+      descriptor: S.capturedDesc,
+      addedAt: new Date().toISOString(),
+    };
+
+    if (S.capturedBlob) {
+      const ph = await uploadBlob(`${student.id}.jpg`, S.capturedBlob, S.rootId);
+      student.photoId = ph.id;
+    }
+
+    S.students.push(student);
+    await saveStudents();
+    buildMatcher();
+    fillClassFilters();
+    renderStudents();
+
+    // Reset
+    $('inp-name').value = ''; $('inp-class').value = ''; $('inp-sid').value = '';
+    $('reg-preview').style.display = 'none';
+    $('reg-msg').style.display = 'none';
+    clearCanvas('cvs-reg');
+    S.capturedDesc = null; S.capturedBlob = null;
+
+    notif(`✅ تم حفظ الطالب: ${name}`, 'success');
+  } catch(e) {
+    notif('خطأ في الحفظ: ' + e.message, 'error');
+  } finally {
+    btn.disabled = true; btn.textContent = '💾 حفظ الطالب في Drive';
+  }
+}
+
+async function deleteStudent(id) {
+  if (!confirm('هل تريد حذف هذا الطالب؟')) return;
+  const s = S.students.find(x => x.id === id);
+  if (s?.photoId) { try { await delFile(s.photoId); } catch {} }
+  S.students = S.students.filter(x => x.id !== id);
+  await saveStudents();
+  buildMatcher();
+  renderStudents();
+  notif('تم الحذف', 'info');
+}
+
+// ── ATTENDANCE ────────────────────────────────────────
+async function loadTodayAtt() {
+  const fname = today() + '.json';
+  const list = await get('/files', {
+    q: `name='${fname}' and '${S.attFolderId}' in parents and trashed=false`,
+    fields: 'files(id)',
+  });
+  if (list.files?.length) {
+    S.todayFileId = list.files[0].id;
+    try { S.todayAtt = await getMedia(S.todayFileId); } catch { S.todayAtt = []; }
+  } else {
+    S.todayAtt = []; S.todayFileId = null;
+  }
+  renderTodayAtt();
+}
+
+async function saveTodayAtt() {
+  const r = await uploadJSON(today() + '.json', S.todayAtt, S.attFolderId, S.todayFileId);
+  if (!S.todayFileId) S.todayFileId = r.id;
+}
+
+async function recordAtt(student) {
+  const now = Date.now();
+  // 30-min merge: skip if already recorded within window
+  const dup = S.todayAtt.find(r => r.studentId === student.id && (now - r.timestamp) / 60000 <= MERGE_MIN);
+  if (dup) return false;
+
+  const d = new Date();
+  S.todayAtt.push({
+    studentId: student.id, name: student.name,
+    class: student.class, studentId2: student.studentId || '',
+    date: today(),
+    time: d.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    timestamp: now,
+  });
+  await saveTodayAtt();
+  renderTodayAtt();
+  return true;
+}
+
+async function startAttendance() {
+  if (!S.faceMatcher) {
+    notif('لا توجد وجوه مسجّلة — سجّل الطلاب أولاً', 'error'); return;
+  }
+  try {
+    S.attStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 } } });
+    const vid = $('vid-att');
+    vid.srcObject = S.attStream;
+    vid.style.display = 'block';
+    await vid.play();
+    $('att-ph').style.display = 'none';
+    $('att-status').style.display = 'block';
+    $('btn-att-start').style.display = 'none';
+    $('btn-att-stop').style.display = 'inline-flex';
+
+    // Detection loop every 2.5 seconds
+    S.attInterval = setInterval(() => runDetection(), 2500);
+  } catch(e) {
+    notif('لا يمكن الوصول للكاميرا: ' + e.message, 'error');
+  }
+}
+
+async function runDetection() {
+  const vid = $('vid-att');
+  if (vid.readyState < 2) return;
+
+  const cvs = $('cvs-att');
+  cvs.width = vid.videoWidth; cvs.height = vid.videoHeight;
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+  const classFilter = $('att-class-filter').value;
+
+  try {
+    const dets = await detectAll(vid);
+    $('att-status').textContent = `🔍 ${dets.length} وجه مكتشف`;
+
+    for (const det of dets) {
+      const match = S.faceMatcher ? S.faceMatcher.findBestMatch(det.descriptor) : { label: 'unknown' };
+      const student = S.students.find(s => s.id === match.label);
+      const known = match.label !== 'unknown' && !!student;
+
+      if (classFilter && student && student.class !== classFilter) continue;
+
+      const box = det.detection.box;
+      const mx = cvs.width - box.x - box.width; // mirror x
+
+      // Box
+      ctx.strokeStyle = known ? '#00D97E' : '#FF4D6D';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(mx, box.y, box.width, box.height);
+
+      // Label bg
+      const label = known ? student.name : '؟ غير معرّف';
+      ctx.font = 'bold 15px Tajawal, sans-serif';
+      const tw = ctx.measureText(label).width;
+      const lx = mx + (box.width - tw) / 2;
+      ctx.fillStyle = known ? 'rgba(0,217,126,.85)' : 'rgba(255,77,109,.85)';
+      ctx.fillRect(mx, box.y - 30, box.width, 30);
+
+      // Label text
+      ctx.fillStyle = known ? '#000' : '#fff';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, mx + box.width / 2, box.y - 9);
+      ctx.textAlign = 'start';
+
+      // Record
+      if (known) {
+        const recorded = await recordAtt(student);
+        if (recorded) notif(`✅ حضور: ${student.name}`, 'success');
+      }
+    }
+  } catch(e) { console.warn('Detection error:', e); }
+}
+
+function stopAttendance() {
+  clearInterval(S.attInterval); S.attInterval = null;
+  stopStream(S.attStream); S.attStream = null;
+  const vid = $('vid-att'); vid.style.display = 'none'; vid.srcObject = null;
+  $('att-ph').style.display = 'flex';
+  $('att-status').style.display = 'none';
+  $('btn-att-start').style.display = 'inline-flex';
+  $('btn-att-stop').style.display = 'none';
+  clearCanvas('cvs-att');
+}
+
+// ── RECORDS ───────────────────────────────────────────
+async function loadRecords() {
+  const date = $('rec-date').value;
+  const classF = $('rec-class').value;
+  if (!date) return;
+
+  const out = $('records-out');
+  out.innerHTML = '<p style="color:var(--muted);text-align:center;padding:24px">⏳ جاري التحميل...</p>';
+
+  try {
+    const fname = date + '.json';
+    const list = await get('/files', {
+      q: `name='${fname}' and '${S.attFolderId}' in parents and trashed=false`,
+      fields: 'files(id)',
+    });
+    if (!list.files?.length) {
+      out.innerHTML = '<div class="empty"><div class="e-icon">📅</div><p>لا توجد سجلات لهذا التاريخ</p></div>';
+      return;
+    }
+    let rows = await getMedia(list.files[0].id);
+    if (classF) rows = rows.filter(r => r.class === classF);
+    S.currentRecords = rows;
+
+    if (!rows.length) {
+      out.innerHTML = '<div class="empty"><div class="e-icon">📋</div><p>لا توجد سجلات للصف المحدد</p></div>';
+      return;
+    }
+
+    out.innerHTML = `
+      <div class="card" style="overflow-x:auto">
+        <div class="rec-header">
+          <span>الاسم</span><span>الصف</span><span>الوقت</span><span>التاريخ</span>
+        </div>
+        ${rows.map(r => `
+          <div class="rec-row">
+            <span style="font-weight:700">${esc(r.name)}</span>
+            <span><span class="badge b-blue">${esc(r.class)}</span></span>
+            <span style="color:var(--accent)">${esc(r.time)}</span>
+            <span style="color:var(--muted)">${esc(r.date)}</span>
+          </div>`).join('')}
+      </div>
+      <p style="color:var(--muted);text-align:left;margin-top:8px;font-size:.88rem">
+        إجمالي الحضور: <strong style="color:var(--text)">${rows.length} طالب</strong>
+      </p>`;
+  } catch(e) {
+    out.innerHTML = `<div class="empty"><p>خطأ: ${esc(e.message)}</p></div>`;
+  }
+}
+
+function exportToday() {
+  if (!S.todayAtt.length) { notif('لا توجد بيانات لتصديرها', 'info'); return; }
+  downloadCSV(S.todayAtt, `حضور-${today()}.csv`);
+}
+
+function exportCSV() {
+  if (!S.currentRecords.length) { notif('حمّل السجلات أولاً', 'info'); return; }
+  downloadCSV(S.currentRecords, `حضور-${$('rec-date').value}.csv`);
+}
+
+function downloadCSV(rows, filename) {
+  const BOM = '\uFEFF';
+  const header = 'الاسم,الصف,رقم الطالب,التاريخ,الوقت\n';
+  const body = rows.map(r => `${r.name},${r.class},${r.studentId2||r.studentId||''},${r.date},${r.time}`).join('\n');
+  const blob = new Blob([BOM + header + body], { type: 'text/csv;charset=utf-8' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: filename });
+  a.click(); URL.revokeObjectURL(a.href);
+  notif('تم التصدير 📥', 'success');
+}
+
+// ── RENDER ────────────────────────────────────────────
+function renderStudents(filter = '') {
+  const list = $('students-list');
+  const items = filter
+    ? S.students.filter(s => s.name.includes(filter) || s.class.includes(filter))
+    : S.students;
+
+  if (!items.length) {
+    list.innerHTML = '<div class="empty"><div class="e-icon">👥</div><p>لا يوجد طلاب مسجّلون</p></div>';
+    return;
+  }
+  list.innerHTML = items.map(s => `
+    <div class="student-item">
+      <div class="avatar">${s.name.charAt(0)}</div>
+      <div class="s-info">
+        <div class="s-name">${esc(s.name)}</div>
+        <div class="s-class">${esc(s.class)}${s.studentId ? ' · رقم: ' + esc(s.studentId) : ''}</div>
+      </div>
+      <span class="badge b-blue">${esc(s.class)}</span>
+      <button class="btn-icon" onclick="deleteStudent('${s.id}')" title="حذف">🗑</button>
+    </div>`).join('');
+}
+
+function filterStudents(val) { renderStudents(val.trim()); }
+
+function renderTodayAtt() {
+  const list = $('today-list');
+  const n = S.todayAtt.length;
+  $('today-count').textContent = n + ' طالب';
+  $('s-present').textContent = n;
+  $('s-total').textContent = S.students.length;
+  $('s-absent').textContent = Math.max(0, S.students.length - n);
+
+  if (!n) {
+    list.innerHTML = '<div class="empty" style="padding:24px"><div class="e-icon" style="font-size:2rem">📋</div><p>لا يوجد حضور مسجّل</p></div>';
+    return;
+  }
+  const sorted = [...S.todayAtt].sort((a, b) => b.timestamp - a.timestamp);
+  list.innerHTML = sorted.map(r => `
+    <div class="att-item">
+      <div>
+        <div style="font-weight:700">${esc(r.name)}</div>
+        <div style="font-size:.8rem;color:var(--muted)">${esc(r.class)}</div>
+      </div>
+      <span style="color:var(--accent);font-size:.88rem;font-weight:700">${esc(r.time)}</span>
+    </div>`).join('');
+}
+
+function fillClassFilters() {
+  const classes = [...new Set(S.students.map(s => s.class))].sort();
+  const opts = '<option value="">جميع الصفوف</option>' +
+    classes.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  $('att-class-filter').innerHTML = opts;
+  $('rec-class').innerHTML = opts;
+}
+
+// ── UI HELPERS ────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function goTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  $('view-' + tab).classList.add('active');
+  if (tab === 'students') renderStudents();
+}
+
+async function refreshAll() {
+  notif('⏳ جاري التحديث...', 'info');
+  await loadStudents();
+  await loadTodayAtt();
+  buildMatcher();
+  fillClassFilters();
+  notif('✅ تم التحديث', 'success');
+}
+
+let notifT;
+function notif(msg, type = 'info') {
+  const el = $('notif');
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(notifT);
+  notifT = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function $ (id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function stopStream(stream) { stream?.getTracks().forEach(t => t.stop()); }
+function clearCanvas(id) {
+  const c = $(id);
+  if (c) { const ctx = c.getContext('2d'); ctx.clearRect(0, 0, c.width, c.height); }
+}
+</script>
+</body>
+</html>
