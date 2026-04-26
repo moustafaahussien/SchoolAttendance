@@ -33,41 +33,7 @@ body { font-family:'Tajawal',sans-serif; background:var(--bg); color:var(--text)
 .screen { display:none; min-height:100vh; }
 .screen.active { display:flex; }
 
-/* ── SETUP ── */
-#screen-setup {
-  justify-content:center; align-items:center;
-  background: radial-gradient(ellipse at 30% 40%, rgba(79,142,247,0.15) 0%, transparent 60%),
-              radial-gradient(ellipse at 70% 60%, rgba(0,217,126,0.1) 0%, transparent 50%),
-              var(--bg);
-}
-.setup-box {
-  background: var(--surface); border:1px solid var(--border);
-  border-radius: var(--r); padding:48px; max-width:520px; width:90%;
-  box-shadow: var(--shadow);
-}
-.logo-ring {
-  width:80px; height:80px; border-radius:50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display:flex; align-items:center; justify-content:center;
-  font-size:2rem; margin:0 auto 24px; box-shadow: var(--glow);
-}
-.setup-box h1 { font-size:1.8rem; font-weight:800; text-align:center; margin-bottom:6px; }
-.setup-box > p { color:var(--muted); text-align:center; margin-bottom:28px; line-height:1.7; }
-
-/* ── FORM ELEMENTS ── */
-.fg { margin-bottom:18px; }
-.fg label { display:block; font-weight:600; font-size:.9rem; color:var(--muted); margin-bottom:8px; }
-.fg input, .fg select, .fg textarea {
-  width:100%; padding:12px 16px;
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:10px; color:var(--text);
-  font-family:'Tajawal',sans-serif; font-size:1rem;
-  transition:border-color .2s;
-}
-.fg input:focus, .fg select:focus { outline:none; border-color:var(--accent2); }
-.fg input[dir="ltr"] { direction:ltr; }
-
-/* ── BUTTONS ── */
+/* ── AUTH ── */
 .btn {
   display:inline-flex; align-items:center; gap:8px;
   padding:12px 24px; border-radius:10px; border:none;
@@ -120,6 +86,12 @@ code {
   text-align:center; box-shadow:var(--shadow);
 }
 .auth-box h2 { font-size:1.6rem; font-weight:800; margin:16px 0 8px; }
+.logo-ring {
+  width:80px; height:80px; border-radius:50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:2rem; margin:0 auto 24px; box-shadow: var(--glow);
+}
 
 /* ── LOADING ── */
 #screen-loading { justify-content:center; align-items:center; flex-direction:column; gap:16px; }
@@ -323,55 +295,15 @@ canvas.cam-canvas {
 <body>
 
 <!-- ═══════════════════════════════════════════════════════
-     SCREEN 1: SETUP (First Time)
+     SCREEN 1: AUTH
 ═══════════════════════════════════════════════════════ -->
-<div class="screen active" id="screen-setup">
-  <div class="setup-box">
-    <div class="logo-ring">🎓</div>
-    <h1>نظام تحضير الطلاب</h1>
-    <p>تعرّف تلقائي على وجوه الطلاب وتسجيل الحضور مرتبط بـ Google Drive</p>
-
-    <div class="steps">
-      <strong>إعداد Google OAuth (مرة واحدة فقط):</strong>
-      <ol>
-        <li>افتح <strong>console.cloud.google.com</strong></li>
-        <li>أنشئ مشروعاً جديداً ← فعّل <strong>Google Drive API</strong></li>
-        <li>APIs &amp; Services → Credentials → Create → OAuth 2.0 Client ID</li>
-        <li>النوع: <strong>Web application</strong></li>
-        <li>Authorized JavaScript origins: <code>http://localhost:8000</code></li>
-        <li>انسخ الـ <strong>Client ID</strong> وألصقه أدناه</li>
-      </ol>
-    </div>
-
-    <div class="steps" style="background:rgba(0,217,126,.06);border-color:rgba(0,217,126,.2)">
-      <strong style="color:var(--accent)">تشغيل الملف:</strong><br>
-      افتح Terminal في نفس مجلد الملف وشغّل:<br>
-      <code>python3 -m http.server 8000</code><br>
-      ثم افتح: <code>http://localhost:8000/attendance-system.html</code>
-    </div>
-
-    <div class="fg">
-      <label>Google OAuth Client ID</label>
-      <input type="text" id="inp-client-id" dir="ltr" placeholder="1234567890-xxxx.apps.googleusercontent.com">
-    </div>
-
-    <button class="btn btn-green btn-full" onclick="saveSetup()">💾 حفظ والمتابعة</button>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════
-     SCREEN 2: AUTH
-═══════════════════════════════════════════════════════ -->
-<div class="screen" id="screen-auth">
+<div class="screen active" id="screen-auth">
   <div class="auth-box">
     <div class="logo-ring">🎓</div>
     <h2>نظام تحضير الطلاب</h2>
     <p style="color:var(--muted);margin-bottom:32px;line-height:1.7">سجّل الدخول بحساب Google للوصول إلى بيانات الطلاب المحفوظة</p>
     <button class="btn btn-blue btn-full" onclick="signIn()" style="margin-bottom:12px">
       🔐 تسجيل الدخول بـ Google
-    </button>
-    <button class="btn btn-ghost btn-full btn-sm" onclick="showScreen('screen-setup')">
-      ⚙️ تغيير Client ID
     </button>
   </div>
 </div>
@@ -594,6 +526,7 @@ const MODELS_URL   = 'https://raw.githubusercontent.com/justadudewhohacks/face-a
 const API          = 'https://www.googleapis.com/drive/v3';
 const UPLOAD_API   = 'https://www.googleapis.com/upload/drive/v3';
 const SCOPE        = 'https://www.googleapis.com/auth/drive.file';
+const CLIENT_ID    = '716847908876-h1r9mgf3297nffoub9dijuna117npvg7.apps.googleusercontent.com'; // ← ضع Client ID هنا
 const FOLDER_NAME  = 'نظام_تحضير_الطلاب';
 const MATCH_TH     = 0.5;   // 0 = perfect match, 1 = any
 const MERGE_MIN    = 30;    // minutes before allowing duplicate attendance
@@ -615,26 +548,17 @@ let tokenClient;
 
 // ── BOOT ──────────────────────────────────────────────
 window.addEventListener('load', () => {
-  const saved = localStorage.getItem('gcid') || '';
-  document.getElementById('inp-client-id').value = saved;
   document.getElementById('rec-date').value = today();
-  if (saved) initGIS(saved);
+  initGIS();
 });
 
 function today() { return new Date().toISOString().split('T')[0]; }
 
-function saveSetup() {
-  const id = document.getElementById('inp-client-id').value.trim();
-  if (!id) { notif('أدخل Client ID', 'error'); return; }
-  localStorage.setItem('gcid', id);
-  initGIS(id);
-}
-
-function initGIS(clientId) {
+function initGIS() {
   const wait = () => {
     if (typeof google === 'undefined' || !google.accounts) { setTimeout(wait, 250); return; }
     tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: clientId, scope: SCOPE, callback: onToken,
+      client_id: CLIENT_ID, scope: SCOPE, callback: onToken,
     });
     showScreen('screen-auth');
   };
