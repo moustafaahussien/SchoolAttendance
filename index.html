@@ -299,7 +299,7 @@ canvas.cam-canvas {
 ═══════════════════════════════════════════════════════ -->
 <div class="screen active" id="screen-auth">
   <div class="auth-box">
-    <div class="logo-ring">🎓</div>
+    <div class="logo-ring" style="background:none;box-shadow:none;overflow:visible;width:120px;height:80px"><img src="21csu.png" alt="Dar Al Thikr Schools" style="width:100%;height:100%;object-fit:contain"></div>
     <h2>نظام تحضير الطلاب</h2>
     <p style="color:var(--muted);margin-bottom:32px;line-height:1.7">سجّل الدخول بحسابك على Google — جميع المعلمين يصلون لنفس بيانات الطلاب</p>
     <button class="btn btn-blue btn-full" onclick="signIn()">
@@ -334,7 +334,7 @@ canvas.cam-canvas {
       <button class="nav-tab" data-tab="students" onclick="goTab('students')">👥 الطلاب</button>
       <button class="nav-tab" data-tab="records" onclick="goTab('records')">📊 السجلات</button>
     </div>
-    <div class="nav-brand">🎓 نظام التحضير</div>
+    <div class="nav-brand" style="display:flex;align-items:center;gap:10px"><img src="21csu.png" alt="Dar Al Thikr" style="height:36px;object-fit:contain"><span style="font-size:.95rem">نظام التحضير</span></div>
     <div class="nav-actions">
       <div id="teacher-badge" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px">
         <img id="teacher-pic" src="" alt="" style="width:28px;height:28px;border-radius:50%;display:none;object-fit:cover">
