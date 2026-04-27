@@ -301,8 +301,12 @@ canvas.cam-canvas {
   <div class="auth-box">
     <div class="logo-ring">🎓</div>
     <h2>نظام تحضير الطلاب</h2>
-    <p style="color:var(--muted);margin-bottom:32px;line-height:1.7">سجّل الدخول بحساب Google للوصول إلى بيانات الطلاب المحفوظة</p>
-    <button class="btn btn-blue btn-full" onclick="signIn()" style="margin-bottom:12px">
+    <p style="color:var(--muted);margin-bottom:20px;line-height:1.7">سجّل الدخول بحسابك على Google — جميع المعلمين يصلون لنفس بيانات الطلاب</p>
+    <div style="background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:14px 16px;margin-bottom:24px;font-size:.83rem;color:var(--muted);text-align:right;line-height:2">
+      <strong style="color:var(--accent2)">📁 مجلد مشترك:</strong> جميع المعلمين يقرؤون ويكتبون في نفس الفولدر على Drive.<br>
+      كل سجل حضور يحتوي على <strong style="color:var(--text)">اسم المعلم</strong> الذي أخذ الحضور.
+    </div>
+    <button class="btn btn-blue btn-full" onclick="signIn()">
       🔐 تسجيل الدخول بـ Google
     </button>
   </div>
@@ -336,7 +340,13 @@ canvas.cam-canvas {
     </div>
     <div class="nav-brand">🎓 نظام التحضير</div>
     <div class="nav-actions">
+      <div id="teacher-badge" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px">
+        <img id="teacher-pic" src="" alt="" style="width:28px;height:28px;border-radius:50%;display:none;object-fit:cover">
+        <span id="teacher-name" style="font-size:.88rem;font-weight:700;color:var(--text)">...</span>
+        <span style="font-size:.75rem;color:var(--muted)" id="teacher-role">معلم</span>
+      </div>
       <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="تحديث البيانات">🔄</button>
+      <button class="btn btn-ghost btn-sm" onclick="signOut()" title="تسجيل الخروج" style="color:var(--danger)">خروج</button>
     </div>
   </nav>
 
@@ -525,15 +535,16 @@ canvas.cam-canvas {
 const MODELS_URL   = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
 const API          = 'https://www.googleapis.com/drive/v3';
 const UPLOAD_API   = 'https://www.googleapis.com/upload/drive/v3';
-const SCOPE        = 'https://www.googleapis.com/auth/drive.file';
+const SCOPE        = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 const CLIENT_ID    = '716847908876-2h3csniouh1699l05c1uajvfgtmuv4e1.apps.googleusercontent.com'; // ← ضع Client ID هنا
-const FOLDER_NAME  = 'نظام_تحضير_الطلاب';
+const SHARED_FOLDER_ID = '1cZZI1pHZVG9YcuBrVlVS44LqjAkM9Wc6';               // ← ضع ID الفولدر المشترك هنا
 const MATCH_TH     = 0.5;   // 0 = perfect match, 1 = any
 const MERGE_MIN    = 30;    // minutes before allowing duplicate attendance
 
 // ── STATE ─────────────────────────────────────────────
 const S = {
   token: null, tokenExp: null,
+  teacher: { name: '', email: '', picture: '' },
   rootId: null, attFolderId: null,
   studentsFileId: null, students: [],
   faceMatcher: null, modelsOk: false,
@@ -575,6 +586,13 @@ async function onToken(r) {
   S.token    = r.access_token;
   S.tokenExp = Date.now() + r.expires_in * 1000;
   showScreen('screen-loading');
+  // Fetch teacher profile
+  try {
+    const prof = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: 'Bearer ' + S.token }
+    }).then(r => r.json());
+    S.teacher = { name: prof.name || prof.email, email: prof.email || '', picture: prof.picture || '' };
+  } catch { S.teacher = { name: 'معلم', email: '', picture: '' }; }
   await boot();
 }
 
@@ -599,6 +617,7 @@ async function boot() {
 
     buildMatcher();
     fillClassFilters();
+    renderTeacher();
     showScreen('screen-main');
     notif('🎉 تم التحميل بنجاح', 'success');
   } catch(e) {
@@ -713,19 +732,11 @@ async function delFile(id) {
 
 // ── FOLDER SETUP ──────────────────────────────────────
 async function setupFolders() {
-  // Root folder
-  let list = await get('/files', {
-    q: `name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-    fields: 'files(id)',
-  });
-  S.rootId = list.files?.[0]?.id;
-  if (!S.rootId) {
-    const f = await createFolder(FOLDER_NAME);
-    S.rootId = f.id;
-  }
+  // Use the shared folder directly — no creation needed
+  S.rootId = SHARED_FOLDER_ID;
 
-  // Attendance subfolder
-  list = await get('/files', {
+  // Find or create the attendance subfolder inside shared folder
+  let list = await get('/files', {
     q: `name='attendance' and mimeType='application/vnd.google-apps.folder' and '${S.rootId}' in parents and trashed=false`,
     fields: 'files(id)',
   });
@@ -931,6 +942,8 @@ async function recordAtt(student) {
     date: today(),
     time: d.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     timestamp: now,
+    teacherName: S.teacher.name,
+    teacherEmail: S.teacher.email,
   });
   await saveTodayAtt();
   renderTodayAtt();
@@ -1053,14 +1066,15 @@ async function loadRecords() {
 
     out.innerHTML = `
       <div class="card" style="overflow-x:auto">
-        <div class="rec-header">
-          <span>الاسم</span><span>الصف</span><span>الوقت</span><span>التاريخ</span>
+        <div class="rec-header" style="grid-template-columns:2fr 1fr 1fr 1.2fr 1fr">
+          <span>الاسم</span><span>الصف</span><span>الوقت</span><span>المعلم</span><span>التاريخ</span>
         </div>
         ${rows.map(r => `
-          <div class="rec-row">
+          <div class="rec-row" style="grid-template-columns:2fr 1fr 1fr 1.2fr 1fr">
             <span style="font-weight:700">${esc(r.name)}</span>
             <span><span class="badge b-blue">${esc(r.class)}</span></span>
             <span style="color:var(--accent)">${esc(r.time)}</span>
+            <span style="color:var(--text);font-size:.85rem">👤 ${esc(r.teacherName||'—')}</span>
             <span style="color:var(--muted)">${esc(r.date)}</span>
           </div>`).join('')}
       </div>
@@ -1084,8 +1098,8 @@ function exportCSV() {
 
 function downloadCSV(rows, filename) {
   const BOM = '\uFEFF';
-  const header = 'الاسم,الصف,رقم الطالب,التاريخ,الوقت\n';
-  const body = rows.map(r => `${r.name},${r.class},${r.studentId2||r.studentId||''},${r.date},${r.time}`).join('\n');
+  const header = 'الاسم,الصف,رقم الطالب,التاريخ,الوقت,المعلم,البريد الإلكتروني للمعلم\n';
+  const body = rows.map(r => `${r.name},${r.class},${r.studentId2||r.studentId||''},${r.date},${r.time},${r.teacherName||''},${r.teacherEmail||''}`).join('\n');
   const blob = new Blob([BOM + header + body], { type: 'text/csv;charset=utf-8' });
   const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: filename });
   a.click(); URL.revokeObjectURL(a.href);
@@ -1136,7 +1150,10 @@ function renderTodayAtt() {
         <div style="font-weight:700">${esc(r.name)}</div>
         <div style="font-size:.8rem;color:var(--muted)">${esc(r.class)}</div>
       </div>
-      <span style="color:var(--accent);font-size:.88rem;font-weight:700">${esc(r.time)}</span>
+      <div style="text-align:left">
+        <div style="color:var(--accent);font-size:.88rem;font-weight:700">${esc(r.time)}</div>
+        <div style="font-size:.75rem;color:var(--muted)">👤 ${esc(r.teacherName||'—')}</div>
+      </div>
     </div>`).join('');
 }
 
@@ -1177,6 +1194,27 @@ function notif(msg, type = 'info') {
   el.textContent = msg; el.className = 'show ' + type;
   clearTimeout(notifT);
   notifT = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function renderTeacher() {
+  const { name, email, picture } = S.teacher;
+  $('teacher-name').textContent = name || 'معلم';
+  $('teacher-role').textContent  = email || '';
+  const pic = $('teacher-pic');
+  if (picture) { pic.src = picture; pic.style.display = 'block'; }
+  else pic.style.display = 'none';
+}
+
+function signOut() {
+  if (S.attInterval) { clearInterval(S.attInterval); S.attInterval = null; }
+  stopStream(S.attStream); stopStream(S.regStream);
+  S.token = null; S.teacher = { name:'', email:'', picture:'' };
+  S.students = []; S.todayAtt = [];
+  S.rootId = null; S.attFolderId = null;
+  S.studentsFileId = null; S.todayFileId = null;
+  google.accounts.oauth2.revoke(S.token, () => {});
+  showScreen('screen-auth');
+  notif('تم تسجيل الخروج', 'info');
 }
 
 function $ (id) { return document.getElementById(id); }
